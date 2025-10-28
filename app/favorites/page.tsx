@@ -1,3 +1,6 @@
+// app/favorites/page.tsx
+export const dynamic = 'force-dynamic';
+
 import FavoritesPageClient from '@/components/gallery/FavoritesPageClient';
 
 export const metadata = {
@@ -5,7 +8,6 @@ export const metadata = {
 };
 
 export default function FavoritesPage() {
-  // Client-side only rendering (data retrieved from localStorage)
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">
       <h1 className="mb-4 text-lg font-semibold text-black">My Favorites</h1>

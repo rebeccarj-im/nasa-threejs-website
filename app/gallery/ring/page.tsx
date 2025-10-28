@@ -2,13 +2,12 @@
 import { headers } from 'next/headers';
 import GalleryRingClient from '@/components/gallery/GalleryRingClient';
 
-// Import shared types from models to avoid duplicate declarations
 import type { ImageSearchResponse } from '@/lib/models/image';
 import type { DonkiListResponse } from '@/lib/models/donki';
 import type { NeowsListResponse } from '@/lib/models/neows';
 
+export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Gallery — Cosmos Oracle' };
-export const revalidate = 300;
 
 type SearchParams = { [k: string]: string | string[] | undefined };
 
@@ -24,6 +23,12 @@ function num(v: string | string[] | undefined) {
   return Number.isFinite(n) ? Math.floor(n) : 0;
 }
 
+import {
+  makeImageFallback,
+  makeDonkiFallback,
+  makeNeowsFallback,
+} from '@/lib/utils/fallback';
+
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const rawLib = (str(searchParams.lib) || 'image').toLowerCase();
   const lib: 'image' | 'donki' | 'neows' =
@@ -38,7 +43,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     try {
       const res = await fetch(`${base}${pathWithSearch}`, {
         headers: { Accept: 'application/json' },
-        next: { revalidate },
+        cache: 'no-store',
       });
       if (!res.ok) return null;
       return (await res.json()) as T;
@@ -61,7 +66,18 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     if (q) sp.set('q', q);
     if (yearStart) sp.set('year_start', yearStart);
     if (yearEnd) sp.set('year_end', yearEnd);
-    imageData = (await jsonGet<ImageSearchResponse>(`/api/data/image?${sp.toString()}`)) ?? undefined;
+
+    const res = await jsonGet<ImageSearchResponse>(`/api/data/image?${sp.toString()}`);
+    imageData =
+      res ??
+      ({
+        lib: 'image',
+        page,
+        pageSize: 24,
+        total: 0,
+        hasMore: false,
+        items: makeImageFallback(8),
+      } as ImageSearchResponse);
   } else if (lib === 'donki') {
     const start = str(searchParams.start);
     const end = str(searchParams.end);
@@ -70,7 +86,18 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     const sp = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (start) sp.set('start', start);
     if (end) sp.set('end', end);
-    donkiData = (await jsonGet<DonkiListResponse>(`/api/data/donki?${sp.toString()}`)) ?? undefined;
+
+    const res = await jsonGet<DonkiListResponse>(`/api/data/donki?${sp.toString()}`);
+    donkiData =
+      res ??
+      ({
+        lib: 'donki',
+        page,
+        pageSize: limit,
+        total: 0,
+        hasMore: false,
+        items: makeDonkiFallback(6),
+      } as DonkiListResponse);
   } else {
     const start = str(searchParams.start);
     const end = str(searchParams.end);
@@ -79,11 +106,20 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     const sp = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (start) sp.set('start', start);
     if (end) sp.set('end', end);
-    neowsData = (await jsonGet<NeowsListResponse>(`/api/data/neows?${sp.toString()}`)) ?? undefined;
+
+    const res = await jsonGet<NeowsListResponse>(`/api/data/neows?${sp.toString()}`);
+    neowsData =
+      res ??
+      ({
+        lib: 'neows',
+        page,
+        pageSize: limit,
+        total: 0,
+        hasMore: false,
+        items: makeNeowsFallback(6),
+      } as NeowsListResponse);
   }
 
-  // Use a unique key to ensure a full remount when switching data sources,
-  // preventing React hook order mismatches.
   return (
     <div>
       {lib === 'image' && <GalleryRingClient key="image" lib="image" imageData={imageData} />}

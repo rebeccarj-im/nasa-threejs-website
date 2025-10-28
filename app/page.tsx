@@ -1,9 +1,11 @@
 // app/page.tsx
-import dynamic from 'next/dynamic';
+export const dynamic = 'force-dynamic'; 
+
+import nextDynamic from 'next/dynamic';
 
 export const metadata = { title: 'Home' };
 
-const ThreeCards = dynamic(() => import('@/components/three/ThreeCards'), { ssr: false });
+const ThreeCards = nextDynamic(() => import('@/components/three/ThreeCards'), { ssr: false });
 
 export default function HomePage() {
   return (
