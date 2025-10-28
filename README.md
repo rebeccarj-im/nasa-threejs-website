@@ -1,4 +1,5 @@
 # Cosmos Oracle
+<img width="1470" height="956" alt="Screenshot 2025-10-28 at 19 26 13" src="https://github.com/user-attachments/assets/04380a77-9f2e-48c3-aec8-a77bbb3aa471" />
 
 A lightweight **Next.js + TypeScript** playground for exploring space data with a clean UI, shareable overlays, and a playful 3D landing. It pulls together an **Image Library**, **NASA DONKI** solar events, and **NeoWs** near-Earth object approaches, with first-class **sharing**, **telemetry**, and **tests**.
 
