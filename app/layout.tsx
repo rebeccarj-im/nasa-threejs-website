@@ -1,11 +1,13 @@
 // app/layout.tsx
 import '../styles/globals.css';
 import type { Metadata, Viewport } from 'next';
+import { Suspense } from 'react';
 import dynamic from 'next/dynamic';
 
 import Header from '@/components/common/Header';
 import Footer from '@/components/common/Footer';
 
+// Client-only widgets (no SSR)
 const AmbientAudio = dynamic(() => import('@/components/common/AmbientAudio'), { ssr: false });
 const AudioBootstrap = dynamic(() => import('@/components/common/AudioBootstrap'), { ssr: false });
 
@@ -28,18 +30,26 @@ export const viewport: Viewport = {
   themeColor: '#000000',
 };
 
-// ⛔ The Root Layout must be a server component
+// ⛔ Keep this as a Server Component (no "use client" here)
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="h-full">
-      {/* Important: Do NOT add text or background color classes here, 
-          as it may override the body styles defined in globals.css */}
+      {/* Avoid setting text/background directly on <html>; globals.css handles base theming. */}
       <body className="min-h-screen antialiased flex flex-col overflow-x-hidden">
-        <Header />
-        {/* The content area's colors are defined by each page/component.
-            globals.css already provides default text-gray-900 and bg-gray-50. */}
-        <main className="flex-1">{children}</main>
+        {/* Header (Client Component) uses useSearchParams → place inside Suspense */}
+        <Suspense fallback={null}>
+          <Header />
+        </Suspense>
+
+        {/* Main app content. Wrapping children ensures any subtree using useSearchParams is within a boundary. */}
+        <main className="flex-1">
+          <Suspense fallback={null}>{children}</Suspense>
+        </main>
+
+        {/* Footer is typically static; leave as-is. If it ever uses router hooks, wrap with Suspense too. */}
         <Footer />
+
+        {/* Client-only ambient audio bootstrapping (no need for Suspense here). */}
         <AmbientAudio src="/audio/space-ambience.mp3" />
         <AudioBootstrap />
       </body>

@@ -1,10 +1,17 @@
 // app/gallery/ring/page.tsx
 import { headers } from 'next/headers';
+import { Suspense } from 'react';
 import GalleryRingClient from '@/components/gallery/GalleryRingClient';
 
 import type { ImageSearchResponse } from '@/lib/models/image';
 import type { DonkiListResponse } from '@/lib/models/donki';
 import type { NeowsListResponse } from '@/lib/models/neows';
+
+import {
+  makeImageFallback,
+  makeDonkiFallback,
+  makeNeowsFallback,
+} from '@/lib/utils/fallback';
 
 export const dynamic = 'force-dynamic';
 export const metadata = { title: 'Gallery — Cosmos Oracle' };
@@ -16,6 +23,7 @@ function str(v: string | string[] | undefined) {
   if (Array.isArray(v)) return v[0];
   return undefined;
 }
+
 function num(v: string | string[] | undefined) {
   const s = str(v);
   if (!s) return 0;
@@ -23,17 +31,12 @@ function num(v: string | string[] | undefined) {
   return Number.isFinite(n) ? Math.floor(n) : 0;
 }
 
-import {
-  makeImageFallback,
-  makeDonkiFallback,
-  makeNeowsFallback,
-} from '@/lib/utils/fallback';
-
 export default async function Page({ searchParams }: { searchParams: SearchParams }) {
   const rawLib = (str(searchParams.lib) || 'image').toLowerCase();
   const lib: 'image' | 'donki' | 'neows' =
     (['image', 'donki', 'neows'] as const).includes(rawLib as any) ? (rawLib as any) : 'image';
 
+  // Build an absolute origin from request headers (works on Vercel and locally)
   const h = headers();
   const proto = h.get('x-forwarded-proto') ?? 'https';
   const host = h.get('x-forwarded-host') ?? h.get('host') ?? 'localhost:3000';
@@ -61,6 +64,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     const yearStart = str(searchParams.year_start);
     const yearEnd = str(searchParams.year_end);
     const page = num(searchParams.page) || 1;
+
     const sp = new URLSearchParams();
     sp.set('page', String(page));
     if (q) sp.set('q', q);
@@ -83,6 +87,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     const end = str(searchParams.end);
     const page = num(searchParams.page) || 1;
     const limit = num(searchParams.limit) || 24;
+
     const sp = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (start) sp.set('start', start);
     if (end) sp.set('end', end);
@@ -103,6 +108,7 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
     const end = str(searchParams.end);
     const page = num(searchParams.page) || 1;
     const limit = num(searchParams.limit) || 24;
+
     const sp = new URLSearchParams({ page: String(page), limit: String(limit) });
     if (start) sp.set('start', start);
     if (end) sp.set('end', end);
@@ -122,9 +128,23 @@ export default async function Page({ searchParams }: { searchParams: SearchParam
 
   return (
     <div>
-      {lib === 'image' && <GalleryRingClient key="image" lib="image" imageData={imageData} />}
-      {lib === 'donki' && <GalleryRingClient key="donki" lib="donki" donkiData={donkiData} />}
-      {lib === 'neows' && <GalleryRingClient key="neows" lib="neows" neowsData={neowsData} />}
+      {lib === 'image' && (
+        <Suspense fallback={null}>
+          <GalleryRingClient key="image" lib="image" imageData={imageData} />
+        </Suspense>
+      )}
+
+      {lib === 'donki' && (
+        <Suspense fallback={null}>
+          <GalleryRingClient key="donki" lib="donki" donkiData={donkiData} />
+        </Suspense>
+      )}
+
+      {lib === 'neows' && (
+        <Suspense fallback={null}>
+          <GalleryRingClient key="neows" lib="neows" neowsData={neowsData} />
+        </Suspense>
+      )}
     </div>
   );
 }
