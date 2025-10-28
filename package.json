@@ -1,0 +1,46 @@
+{
+  "name": "cosmos-oracle",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint",
+    "test": "vitest --run",
+    "test:ui": "vitest",
+    "test:cov": "vitest --coverage",
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui"
+  },
+  "dependencies": {
+    "@react-three/drei": "^9.122.0",
+    "@react-three/fiber": "^8.18.0",
+    "@vercel/og": "^0.8.5",
+    "clsx": "^2.1.1",
+    "lucide-react": "^0.546.0",
+    "next": "14.x",
+    "react": "18.x",
+    "react-dom": "18.x",
+    "three": "^0.160.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.56.1",
+    "@tailwindcss/postcss": "^4.1.15",
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.0",
+    "@testing-library/user-event": "^14.6.1",
+    "@types/node": "^24.9.1",
+    "@types/react": "^18.3.26",
+    "@types/react-dom": "^18.3.7",
+    "autoprefixer": "^10.4.21",
+    "cross-fetch": "^4.1.0",
+    "jsdom": "^27.0.1",
+    "msw": "^2.11.6",
+    "postcss": "^8.5.6",
+    "tailwindcss": "^4.1.15",
+    "typescript": "^5.0.0",
+    "vitest": "^4.0.3"
+  }
+}
