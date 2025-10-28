@@ -1,6 +1,6 @@
-// 站点与运行常量
+// Site & runtime constants
 
-// 推断绝对域名（SSR/RSC 下也能用）
+// Derive absolute origin (works in SSR/RSC as well)
 export const APP_ORIGIN =
   typeof process !== 'undefined' && process.env.NEXT_PUBLIC_APP_ORIGIN
     ? process.env.NEXT_PUBLIC_APP_ORIGIN.replace(/\/$/, '')
@@ -8,7 +8,7 @@ export const APP_ORIGIN =
     ? `${window.location.protocol}//${window.location.host}`
     : 'http://localhost:3000';
 
-export const REQ_TIMEOUT_MS = 20000; // 客户端请求超时
+export const REQ_TIMEOUT_MS = 20000; // Client-side request timeout (ms)
 
 export const DEFAULT_PAGE_SIZE = 24;
 

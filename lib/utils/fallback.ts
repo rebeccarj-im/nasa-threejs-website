@@ -1,10 +1,13 @@
-// 统一的降级/占位数据，用在网络失败或空数据时保持“永远有内容”
-import { ImageItem } from '@/lib/models/image';
-import { DonkiItem } from '@/lib/models/donki';
-import { NeowsItem } from '@/lib/models/neows';
+// lib/utils/fallback.ts
+// Unified fallback/placeholders to always show content when network fails or returns empty.
+
+import type { ImageItem } from '@/lib/models/image';
+import type { DonkiMerged } from '@/lib/models/donki';
+import type { ApproachItem } from '@/lib/models/neows';
 
 const now = () => new Date().toISOString();
 
+/** Image Library fallback items */
 export function makeImageFallback(n = 8): ImageItem[] {
   return Array.from({ length: n }).map((_, i) => ({
     id: `fallback-img-${i}`,
@@ -14,7 +17,9 @@ export function makeImageFallback(n = 8): ImageItem[] {
     center: 'N/A',
     photographer: null,
     keywords: ['fallback', 'placeholder'],
-    preview: 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svgPlaceholder(4, 3)),
+    preview:
+      'data:image/svg+xml;charset=utf-8,' +
+      encodeURIComponent(svgPlaceholder(4, 3)),
     sources: {
       searchHref: null,
       assetHref: null,
@@ -23,26 +28,41 @@ export function makeImageFallback(n = 8): ImageItem[] {
   }));
 }
 
-export function makeDonkiFallback(n = 6): DonkiItem[] {
-  return Array.from({ length: n }).map((_, i) => ({
-    id: `fallback-donki-${i}`,
-    kind: i % 2 ? 'FLR' : 'CME',
-    title: `Solar event placeholder #${i + 1}`,
-    startTime: now(),
-    peakTime: null,
-    endTime: null,
-    classType: i % 2 ? 'C' : '—',
-    speed: i % 2 ? null : 450 + i * 20,
-    sourceLocation: 'Unknown',
-    instruments: ['Placeholder'],
-    link: null,
-    preview: null,
-    note: 'Fallback content while DONKI is unavailable.',
-    sources: { apiHref: null, detailHref: null },
-  }));
+/** DONKI fallback items (alternating flare / cme), matching DonkiMerged */
+export function makeDonkiFallback(n = 6): DonkiMerged[] {
+  const items: DonkiMerged[] = [];
+  for (let i = 0; i < n; i++) {
+    const isFlare = i % 2 === 0;
+
+    if (isFlare) {
+      // FlareItem
+      items.push({
+        type: 'flare',
+        id: `fallback-flare-${i}`,
+        startTime: now(),
+        // peakTime is optional (undefined for exactOptionalPropertyTypes compatibility)
+        peakTime: undefined,
+        classType: 'C',
+        region: null,
+        note: 'Fallback flare while DONKI is unavailable.',
+      });
+    } else {
+      // CMEItem
+      items.push({
+        type: 'cme',
+        id: `fallback-cme-${i}`,
+        startTime: now(),
+        speed: 450 + i * 20,
+        direction: 'W',
+        note: 'Fallback CME while DONKI is unavailable.',
+      });
+    }
+  }
+  return items;
 }
 
-export function makeNeowsFallback(n = 6): NeowsItem[] {
+/** NeoWs fallback items, matching ApproachItem */
+export function makeNeowsFallback(n = 6): ApproachItem[] {
   const base = Date.now();
   return Array.from({ length: n }).map((_, i) => ({
     id: `fallback-neo-${i}`,
@@ -56,7 +76,8 @@ export function makeNeowsFallback(n = 6): NeowsItem[] {
 /* -------- helpers -------- */
 
 function svgPlaceholder(wRatio = 4, hRatio = 3): string {
-  const w = 800, h = Math.round((800 * hRatio) / wRatio);
+  const w = 800,
+    h = Math.round((800 * hRatio) / wRatio);
   return `
 <svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}">
   <defs>
