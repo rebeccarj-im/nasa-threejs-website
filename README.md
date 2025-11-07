@@ -84,11 +84,9 @@ tailwind.css
 
 ### 2) Install
 ```bash
-pnpm i
-# or
+
 npm i
-# or
-yarn
+
 ```
 
 ### 3) Environment variables
